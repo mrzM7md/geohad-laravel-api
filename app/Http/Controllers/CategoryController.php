@@ -7,6 +7,7 @@ use App\Exceptions\CustomeException;
 use App\Models\Category;
 use App\Http\Requests\StoreUpdateCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use PhpParser\Node\Expr\List_;
@@ -20,9 +21,20 @@ class CategoryController extends Controller
     {
         try {
             $categories = Category::with('info')->get();
-            return response()->json(['success' => true, 'message' => 'get all categories successfully', 'data' => $categories], 200);
+            return response()->json(['success' => true, 'message' => 'تم جلب جميع العناوين', 'data' => $categories], 200);
         } catch (Exception $e) {
-            throw new CustomeException('حدث خطأ ما', 500);
+            throw new ServerException();
+        }
+    }
+    
+
+    public function getCategoriesWithoutInfos()
+    {
+        try {
+            $categories = Category::all();
+            return response()->json(['success' => true, 'message' => 'تم جلب جميع العناوين', 'data' => $categories], 200);
+        } catch (Exception $e) {
+            throw new ServerException();
         }
     }
     
@@ -35,6 +47,8 @@ class CategoryController extends Controller
     {
         try {
             $category = new Category;
+
+            $this->authorize('create', $category);
             $category->title = $request->title;
             $category->save();
             return response()->json(['success' => true, 'message' => 'تم إضافة عنوان جديد بنجاح !', 'data' => $category], 201);
@@ -53,12 +67,12 @@ class CategoryController extends Controller
     */
     public function show(Request $request)
     {
-            $category = Category::with('info')->whereId($request->id)->first();
-            if($category){
-                return response()->json(['success' => true, 'message' => 'تم جلب العنوان بنجاح', 'data' => $category], 200);
-            }else{
-                throw new CustomeException('هذا العنوان غير موجود ', 404);
-            }
+        $category = Category::with('info')->whereId($request->id)->first();
+        if($category){
+            return response()->json(['success' => true, 'message' => 'تم جلب العنوان بنجاح', 'data' => $category], 200);
+        }else{
+            throw new CustomeException('هذا العنوان غير موجود ', 404);
+        }
     }
 
     /**
@@ -69,6 +83,7 @@ class CategoryController extends Controller
         try{
             $category = Category::with('info')->whereId($request->id)->first();
             if($category){
+                $this->authorize('update', $category);
                 $category->title = $request->title;
                 $category->save();
                 return response()->json(['success' => true, 'message' => 'تم تعديل العنوان بنجاح', 'data' => $category], 201);
@@ -86,9 +101,11 @@ class CategoryController extends Controller
     public function destroy(Request $request)
     {
         $category = Category::with('info')->whereId($request->id)->first();
+
         if($category){
+            $this->authorize('delete', $category);
             if(count($category->info) !== 0){
-                return response()->json(['success' => true, 'message' => 'لا يمكن حذف عنوان ترتبط به معلومات، إما أن تقوم بحذف المعلومات، أو تغير العنوان الخاص بكل المعلومات', 'data' => $category], 409);
+                return response()->json(['success' => false, 'message' => 'لا يمكن حذف عنوان ترتبط به معلومات، إما أن تقوم بحذف المعلومات، أو تغير العنوان الخاص بكل المعلومات'], 409);
             }
             $category->delete();
             return response()->json(['success' => true, 'message' => 'تم حذف العنوان بنجاح', 'data' => $category], 200);

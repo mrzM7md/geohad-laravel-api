@@ -9,58 +9,35 @@ use Illuminate\Auth\Access\Response;
 class InfoPolicy
 {
     /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        //
-    }
-
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Info $info): bool
-    {
-        //
-    }
-
-    /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user)
     {
-        //
+        return $user->role === "admin"
+            ? Response::allow()
+            : Response::deny("ليس لديك الصلاحية لإنشاء معلومة جديدة")
+        ;
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Info $info): bool
+    public function update(User $user, Info $category)
     {
-        //
+        return $user->role === "admin"
+        ? Response::allow()
+        : Response::deny("ليس لديك الصلاحية لتعديل أي معلومة")
+    ;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Info $info): bool
+    public function delete(User $user, Info $category)
     {
-        //
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Info $info): bool
-    {
-        //
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Info $info): bool
-    {
-        //
+        return $user->role === "admin"
+        ? Response::allow()
+        : Response::deny("ليس لديك الصلاحية لحذف أي معلومة")
+    ;
     }
 }

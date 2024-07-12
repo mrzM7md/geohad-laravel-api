@@ -15,10 +15,9 @@ return new class extends Migration
             $table->bigIncrements('id');
             
             $table->string('title');
-            $table->text('content');
+            $table->text('content')->nullable()->default(null);
             $table->enum('type', ['PDF', 'IMAGE', 'TEXT']);
-            $table->string('file_path');
-
+            $table->text('file_path')->nullable()->default(null);
             $table->unsignedBigInteger('category_id')
                 ->nullable();
             
