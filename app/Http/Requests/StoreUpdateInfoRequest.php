@@ -27,7 +27,7 @@ class StoreUpdateInfoRequest extends FormRequest
             'title' => 'required',
             'category_id' => 'required|numeric',
             'type' => 'required',
-            'file_path' => 'url',
+            // 'file_path' => 'url',
         ];
     }
 

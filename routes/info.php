@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 
     Route::group(['prefix' => '/v1/infos'], function() {
         Route::get('/', [InfoController::class , "index"]);
+        Route::get('/get-info-by-id/{id}', [InfoController::class , "find"]);
         Route::get('/{category_id}', [InfoController::class , "getInfosByCategoryId"]);
         Route::post('/', [InfoController::class , "store"])->middleware('auth:api');
         Route::get('/{id}', [InfoController::class , "show"]);

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 
     Route::prefix('/v1/categories')->group(function() {
         Route::get('/', [CategoryController::class , "index"]);
+        Route::get('/get-category-by-id-without-infos/{id}', [CategoryController::class , "find"]);
         Route::get('/without_infos', [CategoryController::class , "getCategoriesWithoutInfos"]);
         Route::post('/', [CategoryController::class , "store"])->middleware('auth:api') ;
         Route::get('/{id}', [CategoryController::class , "show"]);

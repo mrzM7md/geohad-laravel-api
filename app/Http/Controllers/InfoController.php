@@ -6,6 +6,7 @@ use App\Exceptions\CustomeException;
 use App\Exceptions\ServerException;
 use App\Models\Info;
 use App\Http\Requests\StoreUpdateInfoRequest;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class InfoController extends Controller
@@ -23,11 +24,25 @@ class InfoController extends Controller
         }
     }
 
+    public function find(Request $request)
+    {
+            $info = Info::find($request->id);
+            if($info){
+                return response()->json(['success' => true, 'message' => 'تم جلب المعلومة بنجاح', 'data' => $info], 200);
+            }
+            else {
+                throw new CustomeException('لا توجد معلومة تابعة لهذا المعرف' , 404);
+            }
+    }
+
 
     public function getInfosByCategoryId(Request $request)
     { 
-        $infos = Info::whereCategory_id($request->category_id)->get();
+        $infos = Info::whereCategory_id($request->category_id)->with('category')->get();
+        
         if($infos){
+            $category_title = Category::find($request->category_id)->title;
+            // $infos['category_title'] = $category_title;
             return response()->json(['success' => true, 'message' => 'تم جلب المعلومات بنجاح', 'data' => $infos], 200);
         }
         throw new CustomeException("لا توجد بيانات تابعة لمعرف العنوان الذي أدخلته", 404);
@@ -43,6 +58,10 @@ class InfoController extends Controller
 
             $this->authorize('create', $info);
 
+            if(Category::whereCategoryId($request->category_id)->first()){
+                return response()->json(['success' => false, 'message' => 'العنوان الذي أخترته هو أب لعتاوين أخرى..'], 409);
+            }
+            
             $info->title = $request->title;
             $info->category_id = $request->category_id;
             $info->type = $request->type;
@@ -51,7 +70,7 @@ class InfoController extends Controller
 
             $info->save();
 
-            return response()->json(['success' => true, 'message' => 'تم إضافة عنوان جديد بنجاح !', 'data' => $info], 201);
+            return response()->json(['success' => true, 'message' => 'تم إضافة معلومة جديدة بنجاح !', 'data' => $info], 201);
         } catch (\Exception $e) {
                 throw new CustomeException($e->getMessage(), 500);
         }
@@ -78,8 +97,13 @@ class InfoController extends Controller
     {
         $info = Info::with('category')->whereId($request->id)->first();
         if($info){
+            
             $this->authorize('update', $info);
-
+            
+            if(Category::whereCategoryId($request->category_id)->first()){
+                return response()->json(['success' => false, 'message' => 'العنوان الذي أخترته هو أب لعتاوين أخرى..'], 409);
+            }
+            
             $info->title = $request->title;
             $info->category_id = $request->category_id;
             $info->type = $request->type;
